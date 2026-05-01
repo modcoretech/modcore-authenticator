@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>modcore Authenticator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <link rel="stylesheet" href="variables.css">
+  <link rel="stylesheet" href="popup.css">
+  <link rel="stylesheet" href="fonts/fonts.css">
+</head>
+<body>
+
+  <!-- Lock / Setup Screen -->
+  <div id="lock-screen" class="lock-overlay hidden">
+    <div id="lock-unlock" class="lock-card hidden">
+      <i class="icon icon-lock xl"></i>
+      <h2>Authentication Required</h2>
+      <p>Unlock modcore Authenticator to continue.</p>
+      <button id="btn-unlock-passkey" class="list-btn blue" type="button">
+        <i class="icon icon-key"></i>
+        <span>Unlock with Passkey</span>
+      </button>
+      <button id="btn-unlock-recovery" class="list-btn" type="button" style="margin-top:10px;">
+        <span>Use Recovery Code</span>
+      </button>
+    </div>
+
+    <div id="lock-setup" class="lock-card hidden">
+      <i class="icon icon-lock xl"></i>
+      <h2>Secure Your Vault</h2>
+      <p>Create a passkey to encrypt your 2FA secrets.</p>
+      <button id="btn-setup-passkey" class="list-btn blue" type="button">
+        <i class="icon icon-key"></i>
+        <span>Create Passkey</span>
+      </button>
+    </div>
+
+    <div id="lock-recovery-setup" class="lock-card hidden">
+      <i class="icon icon-key xl"></i>
+      <h2>Recovery Code</h2>
+      <p>Save this code somewhere safe. You will not see it again.</p>
+      <div class="inset-group" style="margin: 14px 0;">
+        <div id="recovery-code-display" style="padding: 16px; font-family: var(--font-mono); font-size: 15px; text-align: center; letter-spacing: 0.5px; word-break: break-all; color: var(--color-primary); font-weight: 600;"></div>
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;padding:0 4px;font-size:13px;color:var(--color-text-secondary);cursor:pointer;">
+        <input type="checkbox" id="chk-saved-recovery" style="width:18px;height:18px;accent-color:var(--color-primary);">
+        I have saved this recovery code
+      </label>
+      <button id="btn-continue-recovery" class="list-btn blue" type="button" style="margin-top:16px;" disabled>Continue</button>
+    </div>
+  </div>
+
+  <!-- Nav Bar -->
+  <header class="ios-nav-bar">
+    <button id="btn-settings" class="icon-btn" aria-label="Open Settings" title="Settings">
+      <i class="icon icon-settings"></i>
+    </button>
+    <h1 class="nav-title">Authenticator</h1>
+    <div class="nav-actions">
+      <button id="btn-edit-mode" class="text-btn" title="Edit and reorder accounts">Edit</button>
+    </div>
+  </header>
+
+  <!-- Search -->
+  <div class="search-row-container">
+    <div class="search-wrapper">
+      <i class="icon icon-search sm sub"></i>
+      <input type="text" id="inp-search" placeholder="Search or filter by tag" aria-label="Search accounts" autocomplete="off" spellcheck="false">
+    </div>
+    <button id="btn-add-menu" class="icon-btn-circle" aria-label="Add account" title="Add account (⌘N)">
+      <i class="icon icon-plus white"></i>
+    </button>
+  </div>
+
+  <!-- Sort Chips -->
+  <div class="filter-bar" role="tablist" aria-label="Sort order">
+    <button class="chip active" data-sort="default" role="tab" aria-selected="true">Default</button>
+    <button class="chip" data-sort="alpha" role="tab" aria-selected="false">A – Z</button>
+    <button class="chip" data-sort="date" role="tab" aria-selected="false">Newest</button>
+    <button class="chip" data-sort="used" role="tab" aria-selected="false">Most Used</button>
+  </div>
+
+  <!-- Main List -->
+  <main id="main-list" role="main">
+    <div id="pinned-section" class="list-section hidden">
+      <div class="section-header">Pinned</div>
+      <div id="pinned-list" class="inset-list" role="list" aria-label="Pinned accounts"></div>
+    </div>
+
+    <div id="all-accounts-section" class="list-section">
+      <div class="section-header">All Accounts</div>
+      <div id="token-list" class="inset-list" role="list" aria-label="All accounts"></div>
+    </div>
+
+    <div id="empty-state" class="empty-state hidden" aria-live="polite">
+      <i class="icon icon-shield sub xl"></i>
+      <h3>No Accounts Yet</h3>
+      <p>Tap <strong>+</strong> to scan a QR code or add an account manually.</p>
+    </div>
+  </main>
+
+  <!-- ADD ACCOUNT SHEET -->
+  <div id="sheet-add" class="sheet hidden" role="dialog" aria-modal="true" aria-label="Add Account">
+    <div class="sheet-header">
+      <button id="btn-cancel-add" class="text-btn">Cancel</button>
+      <h3>Add Account</h3>
+      <button id="btn-save-account" class="text-btn bold" disabled aria-disabled="true">Save</button>
+    </div>
+    <div class="sheet-content">
+      <div class="section-header">Scan QR Code</div>
+      <div class="inset-group">
+        <button id="btn-scan-screen" class="list-btn blue" type="button" title="Scan QR code from current browser tab">
+          <i class="icon icon-camera"></i>
+          <span>Scan Current Tab</span>
+        </button>
+        <div class="separator"></div>
+        <button id="btn-scan-image" class="list-btn blue" type="button" title="Upload a QR code image from your device">
+          <i class="icon icon-image"></i>
+          <span>Upload QR Image</span>
+        </button>
+        <input type="file" id="inp-file-scan" accept="image/*" class="hidden" aria-label="Upload QR image">
+      </div>
+      <p class="caption">Scan a QR code from the active tab or upload an image. Processed locally with jsQR.</p>
+
+      <div class="section-header">Manual Entry</div>
+      <div class="inset-group">
+        <input type="text" id="inp-issuer" placeholder="Service name (e.g. Google)" aria-label="Service name" autocomplete="off" spellcheck="false">
+        <div class="separator"></div>
+        <input type="email" id="inp-account" placeholder="Account (e.g. user@example.com)" aria-label="Account" autocomplete="off">
+      </div>
+
+      <div class="inset-group">
+        <div class="password-wrapper">
+          <input type="password" id="inp-secret" placeholder="Secret key (Base32)" aria-label="Secret key" autocomplete="off" spellcheck="false" style="font-family: var(--font-mono);">
+          <button class="password-toggle" id="btn-toggle-secret" type="button" aria-label="Toggle secret key visibility" title="Show or hide the secret key">
+            <i class="icon icon-eye sm sub" id="icon-secret-eye"></i>
+          </button>
+        </div>
+      </div>
+      <p class="caption">The secret key is the Base32 string provided by the service when enabling 2FA.</p>
+
+      <div class="section-header">Tags (optional)</div>
+      <div class="inset-group">
+        <div class="tag-input-wrapper" id="add-tag-wrapper">
+          <div id="tag-container" role="list" aria-label="Tags"></div>
+          <input type="text" id="inp-tags" class="tag-input" placeholder="Add tag, press Enter" aria-label="Add tag">
+        </div>
+      </div>
+
+      <button id="btn-toggle-advanced" class="link-btn" type="button">Show Advanced Options ▾</button>
+      <div id="advanced-options" class="hidden">
+        <div class="inset-group">
+          <div class="form-row">
+            <label for="sel-algo">Algorithm</label>
+            <select id="sel-algo" aria-label="Algorithm">
+              <option value="SHA-1">SHA-1</option>
+              <option value="SHA-256">SHA-256</option>
+              <option value="SHA-512">SHA-512</option>
+            </select>
+          </div>
+          <div class="separator"></div>
+          <div class="form-row">
+            <label for="inp-digits">Digits</label>
+            <input type="number" id="inp-digits" min="4" max="10" value="6" aria-label="Number of digits">
+          </div>
+          <div class="separator"></div>
+          <div class="form-row">
+            <label for="inp-period">Period</label>
+            <input type="number" id="inp-period" min="5" max="300" step="1" value="30" aria-label="Code period">
+          </div>
+        </div>
+        <p class="caption">Only change these if instructed by the service provider.</p>
+      </div>
+
+      <div style="height: 24px;"></div>
+    </div>
+  </div>
+
+  <!-- EDIT ACCOUNT SHEET -->
+  <div id="sheet-edit" class="sheet hidden" role="dialog" aria-modal="true" aria-label="Edit Account">
+    <div class="sheet-header">
+      <button id="btn-close-edit" class="text-btn bold">Done</button>
+      <h3>Edit Account</h3>
+      <div style="width:60px;"></div>
+    </div>
+    <div class="sheet-content">
+      <div class="section-header">Account Details</div>
+      <div class="inset-group">
+        <div class="form-row">
+          <label for="edit-issuer">Service</label>
+          <input type="text" id="edit-issuer" aria-label="Service name" autocomplete="off">
+        </div>
+        <div class="separator"></div>
+        <div class="form-row">
+          <label for="edit-account">Account</label>
+          <input type="text" id="edit-account" aria-label="Account" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="section-header">Tags</div>
+      <div class="inset-group">
+        <div class="tag-input-wrapper" id="edit-tag-wrapper">
+          <div id="edit-tag-container" role="list" aria-label="Tags"></div>
+          <input type="text" id="edit-inp-tags" class="tag-input" placeholder="Add tag" aria-label="Add tag">
+        </div>
+      </div>
+
+      <div class="section-header">Statistics</div>
+      <div class="inset-group">
+        <div class="form-row">
+          <span>Created</span>
+          <span id="display-created" class="value"></span>
+        </div>
+        <div class="separator"></div>
+        <div class="form-row">
+          <span>Last Used</span>
+          <span id="display-last-used" class="value"></span>
+        </div>
+        <div class="separator"></div>
+        <div class="form-row">
+          <span>Times Copied</span>
+          <span id="display-usage-count" class="value"></span>
+        </div>
+      </div>
+
+      <div class="section-header">Actions</div>
+      <div class="inset-group">
+        <button class="list-btn blue" id="btn-toggle-pin" type="button" title="Pin this account to the top">
+          <i class="icon icon-pin"></i>
+          <span id="pin-label">Pin Account</span>
+        </button>
+        <div class="separator"></div>
+        <button class="list-btn blue" id="btn-view-qr" type="button" title="View the QR code for this account">
+          <i class="icon icon-qr"></i>
+          View QR Code
+        </button>
+        <div class="separator"></div>
+        <button class="list-btn blue" id="btn-share-code" type="button" title="Share the current code">
+          <i class="icon icon-share"></i>
+          Share Current Code
+        </button>
+      </div>
+
+      <div class="inset-group">
+        <button class="list-btn red" id="btn-delete-account" type="button" title="Permanently delete this account">
+          <i class="icon icon-trash red"></i>
+          Delete Account
+        </button>
+      </div>
+
+      <div style="height: 24px;"></div>
+    </div>
+  </div>
+
+  <!-- SETTINGS MAIN -->
+  <div id="sheet-settings" class="sheet hidden" role="dialog" aria-modal="true" aria-label="Settings">
+    <div class="sheet-header">
+      <button id="btn-close-settings" class="text-btn bold">Done</button>
+      <h3>Settings</h3>
+      <div style="width:60px;"></div>
+    </div>
+    <div class="sheet-content">
+      <div class="inset-group">
+        <button class="list-btn nav-row" id="btn-open-display" type="button" title="Change display preferences">
+          <span>Display</span>
+          <span class="chevron">›</span>
+        </button>
+        <div class="separator"></div>
+        <button class="list-btn nav-row" id="btn-open-security" type="button" title="Security, passkeys, and recovery">
+          <span>Security &amp; Privacy</span>
+          <span class="chevron">›</span>
+        </button>
+        <div class="separator"></div>
+        <button class="list-btn nav-row" id="btn-open-data" type="button" title="Backups and data management">
+          <span>Data Management</span>
+          <span class="chevron">›</span>
+        </button>
+      </div>
+      <div style="height: 24px;"></div>
+    </div>
+  </div>
+
+  <!-- SETTINGS DISPLAY -->
+  <div id="sheet-settings-display" class="sheet hidden" role="dialog" aria-modal="true" aria-label="Display Settings">
+    <div class="sheet-header">
+      <button id="btn-close-display" class="text-btn bold">Back</button>
+      <h3>Display</h3>
+      <div style="width:60px;"></div>
+    </div>
+    <div class="sheet-content">
+      <div class="inset-group">
+        <div class="form-row">
+          <label for="toggle-icons" title="Show provider icons next to account names">Show Provider Icons</label>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-icons" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="separator"></div>
+        <div class="form-row">
+          <label for="toggle-next-code" title="Show the upcoming code below the current one">Show Next Code</label>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-next-code" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="separator"></div>
+        <div class="form-row">
+          <label for="toggle-progress" title="Show a progress bar for code expiration">Show Progress Bar</label>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-progress" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="separator"></div>
+        <div class="form-row">
+          <label for="toggle-hide-codes" title="Blur codes until hovered">Privacy Mode</label>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-hide-codes">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+      <div style="height: 24px;"></div>
+    </div>
+  </div>
+
+  <!-- SETTINGS SECURITY -->
+  <div id="sheet-settings-security" class="sheet hidden" role="dialog" aria-modal="true" aria-label="Security and Privacy">
+    <div class="sheet-header">
+      <button id="btn-close-security" class="text-btn bold">Back</button>
+      <h3>Security &amp; Privacy</h3>
+      <div style="width:60px;"></div>
+    </div>
+    <div class="sheet-content">
+      <div class="section-header">Clipboard</div>
+      <div class="inset-group">
+        <div class="form-row">
+          <label for="toggle-copy-clear" title="Clear clipboard 30 seconds after copying">Auto-clear Clipboard</label>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-copy-clear" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="section-header">Autofill</div>
+      <div class="inset-group">
+        <div class="form-row">
+          <label for="toggle-autofill" title="Allow one-click autofill on websites">Autofill Feature</label>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-autofill" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="section-header">Passkeys</div>
+      <div class="inset-group">
+        <button class="list-btn nav-row" id="btn-manage-passkeys" type="button" title="View and manage registered passkeys">
+          <span>Manage Passkeys</span>
+          <span class="chevron">›</span>
+        </button>
+      </div>
+
+      <div class="section-header">Recovery</div>
+      <div class="inset-group">
+        <button class="list-btn nav-row" id="btn-reset-recovery" type="button" title="Generate a new recovery code">
+          <span>Reset Recovery Code</span>
+          <span class="chevron">›</span>
+        </button>
+      </div>
+
+      <div class="section-header">Session</div>
+      <div class="inset-group">
+        <button class="list-btn blue" id="btn-lock-now" type="button" title="Lock the extension immediately">
+          <i class="icon icon-lock"></i>
+          <span>Lock Now</span>
+        </button>
+      </div>
+      <div style="height: 24px;"></div>
+    </div>
+  </div>
+
+  <!-- SETTINGS DATA -->
+  <div id="sheet-settings-data" class="sheet hidden" role="dialog" aria-modal="true" aria-label="Data Management">
+    <div class="sheet-header">
+      <button id="btn-close-data" class="text-btn bold">Back</button>
+      <h3>Data Management</h3>
+      <div style="width:60px;"></div>
+    </div>
+    <div class="sheet-content">
+      <div class="inset-group">
+        <button class="list-btn blue" id="btn-export" type="button" title="Export an encrypted backup file">
+          <i class="icon icon-key"></i>
+          Export Backup (Encrypted)
+        </button>
+        <div class="separator"></div>
+        <button class="list-btn blue" id="btn-export-plain" type="button" title="Export an unencrypted backup file">
+          <i class="icon icon-copy"></i>
+          Export Backup (Plain)
+        </button>
+        <div class="separator"></div>
+        <button class="list-btn blue" id="btn-import" type="button" title="Import accounts from a backup file">
+          <i class="icon icon-image"></i>
+          Import Backup
+        </button>
+        <div class="separator"></div>
+        <button class="list-btn blue" id="btn-find-duplicates" type="button" title="Find accounts with identical secrets">
+          <i class="icon icon-duplicate"></i>
+          Find Duplicate Secrets
+        </button>
+      </div>
+      <p class="caption">Encrypted exports require a password. Store backups in a secure location.</p>
+
+      <div class="inset-group">
+        <button class="list-btn red" id="btn-delete-all" type="button" title="Permanently delete all accounts">
+          <i class="icon icon-trash red"></i>
+          Delete All Accounts
+        </button>
+      </div>
+      <div style="height: 24px;"></div>
+    </div>
+  </div>
+
+  <!-- MANAGE PASSKEYS SHEET -->
+  <div id="sheet-manage-passkeys" class="sheet hidden" role="dialog" aria-modal="true" aria-label="Manage Passkeys">
+    <div class="sheet-header">
+      <button id="btn-close-manage-passkeys" class="text-btn bold">Back</button>
+      <h3>Manage Passkeys</h3>
+      <div style="width:60px;"></div>
+    </div>
+    <div class="sheet-content">
+      <div class="section-header">Registered Passkeys</div>
+      <div id="passkeys-list" class="inset-group"></div>
+
+      <div class="section-header">Add Passkey</div>
+      <div class="inset-group">
+        <button class="list-btn blue" id="btn-add-passkey" type="button" title="Register an additional passkey">
+          <i class="icon icon-key"></i>
+          Register New Passkey
+        </button>
+      </div>
+      <div style="height: 24px;"></div>
+    </div>
+  </div>
+
+  <!-- DUPLICATES SHEET -->
+  <div id="sheet-duplicates" class="sheet hidden" role="dialog" aria-modal="true" aria-label="Duplicate Accounts">
+    <div class="sheet-header">
+      <button id="btn-close-duplicates" class="text-btn bold">Done</button>
+      <h3>Duplicate Secrets</h3>
+      <div style="width:60px;"></div>
+    </div>
+    <div class="sheet-content" id="duplicates-content"></div>
+  </div>
+
+  <!-- DIALOG MODAL -->
+  <div id="dialog-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <h3 id="dialog-title">Title</h3>
+      <div id="dialog-body"></div>
+      <div class="dialog-actions" id="dialog-actions"></div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast hidden" role="alert" aria-live="assertive"></div>
+
+  <script src="crypto.js"></script>
+  <script src="jsQR.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
