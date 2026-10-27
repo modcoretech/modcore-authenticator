@@ -34,4 +34,5 @@ Apache 2.0 License
 
 ## modcore
 modcore Authenticator by modcore
+
 Support modcore on Patreon: https://www.patreon.com/cw/modcore
