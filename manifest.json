@@ -1,21 +1,25 @@
 {
   "manifest_version": 3,
   "name": "modcore Authenticator",
-  "version": "6.3.0",
-  "description": "Secure 2FA authenticator with PRF passkeys, encrypted vault, autofill, and modern UI.",
+  "version": "1.0",
+  "description": "Secure 2FA authenticator with passkeys, encrypted vault, autofill, and modern UI.",
   "action": {
     "default_popup": "popup.html",
     "default_title": "modcore Authenticator"
   },
+  "side_panel": {
+    "default_path": "popup.html"
+  },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "js/background.js"
   },
   "permissions": [
     "storage",
     "clipboardWrite",
     "activeTab",
     "scripting",
-    "tabs"
+    "tabs",
+    "sidePanel"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -23,7 +27,7 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js"],
+      "js": ["js/content.js"],
       "run_at": "document_idle",
       "all_frames": false
     }
