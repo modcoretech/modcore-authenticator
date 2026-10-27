@@ -1,0 +1,124 @@
+/* css/variables.css */
+
+:root {
+  --font-sans: 'Akt', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+
+  --text-display-lg: 48px;
+  --text-display-md: 38px;
+  --text-display-sm: 30px;
+  --text-headline-lg: 26px;
+  --text-headline-md: 22px;
+  --text-headline-sm: 18px;
+  --text-title-lg: 17px;
+  --text-title-md: 15px;
+  --text-title-sm: 13px;
+  --text-body-lg: 14px;
+  --text-body-md: 13px;
+  --text-body-sm: 12px;
+  --text-label-lg: 12px;
+  --text-label-md: 11px;
+  --text-label-sm: 10px;
+
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px;
+  --space-12: 48px; --space-16: 64px;
+
+  --radius-sm: 24px;
+  --radius-md: 24px;
+  --radius-lg: 24px;
+  --radius-xl: 24px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --duration-fast: 160ms;
+  --duration-normal: 280ms;
+  --duration-slow: 400ms;
+
+  /* DARK THEME ONLY */
+  --color-bg: #0d0f13;
+  --color-surface: #15181e;
+  --color-surface-hover: #1c2028;
+  --color-surface-high: #15181e;
+  --color-surface-highest: #22262f;
+  --color-surface-lowest: #0a0c0f;
+  --color-surface-low: #15181e;
+  --color-surface-mid: #15181e;
+  --color-surface-selected: #1c2028;
+
+  --color-border: transparent;
+  --color-border-strong: transparent;
+
+  --color-text-primary: #fbfdff;
+  --color-text-secondary: #a0a8b8;
+  --color-text-placeholder: #6e7686;
+  --color-text-disabled: #6e7686;
+  --color-text-muted: #6e7686;
+  --color-text-link: #fbfdff;
+
+  --color-primary: #1e5fff;
+  --color-primary-hover: #4a7fff;
+  --color-primary-on: #ffffff;
+  --color-primary-container: rgba(30, 95, 255, 0.18);
+  --color-primary-rgb: 30, 95, 255;
+
+  --color-secondary: transparent;
+  --color-secondary-hover: #1c2028;
+  --color-secondary-border: transparent;
+  --color-secondary-text: #fbfdff;
+
+  --color-danger: #ff6b6f;
+  --color-danger-hover: #ff8a8d;
+  --color-danger-container: rgba(255, 107, 111, 0.15);
+  --color-danger-on: #ffffff;
+  --color-danger-rgb: 255, 107, 111;
+
+  --color-success: #1e5fff;
+  --color-success-hover: #4a7fff;
+  --color-success-container: rgba(30, 95, 255, 0.18);
+  --color-success-rgb: 30, 95, 255;
+
+  --color-warning: #e5a821;
+  --color-warning-hover: #ffbe3d;
+  --color-warning-container: rgba(229, 168, 33, 0.15);
+  --color-warning-text: #fbfdff;
+  --color-warning-rgb: 229, 168, 33;
+
+  --color-info: #1e5fff;
+  --color-info-container: rgba(30, 95, 255, 0.18);
+
+  --color-disabled-bg: #22262f;
+  --color-disabled-text: #6e7686;
+  --color-disabled-border: transparent;
+
+  --color-focus-ring: rgba(30, 95, 255, 0.5);
+  --color-highlight-bg: rgba(30, 95, 255, 0.18);
+  --color-highlight-text: #fbfdff;
+
+  --color-backdrop: rgba(0, 0, 0, 0.65);
+  --color-modal-bg: #15181e;
+
+  --color-scrollbar-thumb: rgba(251, 253, 255, 0.18);
+  --color-scrollbar-thumb-hover: rgba(251, 253, 255, 0.3);
+
+  --color-icon: #a0a8b8;
+  --color-icon-active: #1e5fff;
+
+  --color-tooltip-bg: #fbfdff;
+  --color-tooltip-text: #0d0f13;
+
+  --color-inverse-surface: #fbfdff;
+  --color-inverse-on-surface: #0d0f13;
+
+  --color-pin: #1e5fff;
+  --color-secure: #ff6b6f;
+
+  color-scheme: dark;
+}
