@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <title>modcore Authenticator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <link rel="stylesheet" href="variables.css">
-  <link rel="stylesheet" href="popup.css">
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/popup.css">
   <link rel="stylesheet" href="fonts/fonts.css">
 </head>
 <body>
@@ -26,9 +26,9 @@
     </div>
 
     <div id="lock-setup" class="lock-card hidden">
-      <i class="icon icon-lock xl"></i>
-      <h2>Secure Your Vault</h2>
-      <p>Create a passkey to encrypt your 2FA secrets.</p>
+      <i class="icon icon-shield xl"></i>
+      <h2>Welcome to modcore</h2>
+      <p>Your 2FA codes stay on this device, encrypted by a passkey only you hold. Create one to begin.</p>
       <button id="btn-setup-passkey" class="list-btn blue" type="button">
         <i class="icon icon-key"></i>
         <span>Create Passkey</span>
@@ -37,8 +37,8 @@
 
     <div id="lock-recovery-setup" class="lock-card hidden">
       <i class="icon icon-key xl"></i>
-      <h2>Recovery Code</h2>
-      <p>Save this code somewhere safe. You will not see it again.</p>
+      <h2>Save Your Recovery Code</h2>
+      <p>This is the only way back in if you lose your passkey. Store it somewhere safe — it will not be shown again.</p>
       <div class="inset-group" style="margin: 14px 0;">
         <div id="recovery-code-display" style="padding: 16px; font-family: var(--font-mono); font-size: 15px; text-align: center; letter-spacing: 0.5px; word-break: break-all; color: var(--color-primary); font-weight: 600;"></div>
       </div>
@@ -66,6 +66,9 @@
     <div class="search-wrapper">
       <i class="icon icon-search sm sub"></i>
       <input type="text" id="inp-search" placeholder="Search or filter by tag" aria-label="Search accounts" autocomplete="off" spellcheck="false">
+      <button id="btn-clear-search" class="search-clear-btn" aria-label="Clear search" title="Clear search">
+        <i class="icon icon-close sm"></i>
+      </button>
     </div>
     <button id="btn-add-menu" class="icon-btn-circle" aria-label="Add account" title="Add account (⌘N)">
       <i class="icon icon-plus white"></i>
@@ -94,8 +97,8 @@
 
     <div id="empty-state" class="empty-state hidden" aria-live="polite">
       <i class="icon icon-shield sub xl"></i>
-      <h3>No Accounts Yet</h3>
-      <p>Tap <strong>+</strong> to scan a QR code or add an account manually.</p>
+      <h3 id="empty-title">No Accounts Yet</h3>
+      <p id="empty-desc">Tap <strong>+</strong> to scan a QR code or add an account manually.</p>
     </div>
   </main>
 
@@ -230,9 +233,14 @@
           <span id="pin-label">Pin Account</span>
         </button>
         <div class="separator"></div>
-        <button class="list-btn blue" id="btn-view-qr" type="button" title="View the QR code for this account">
-          <i class="icon icon-qr"></i>
-          View QR Code
+        <button class="list-btn blue" id="btn-reveal-secret" type="button" title="Securely view the Base32 secret key">
+          <i class="icon icon-eye"></i>
+          Reveal Secret Key
+        </button>
+        <div class="separator"></div>
+        <button class="list-btn blue" id="btn-copy-otp-url" type="button" title="Copy the otpauth:// URL to import elsewhere">
+          <i class="icon icon-link"></i>
+          Copy otpauth URL
         </button>
         <div class="separator"></div>
         <button class="list-btn blue" id="btn-share-code" type="button" title="Share the current code">
@@ -398,7 +406,7 @@
         <div class="separator"></div>
         <button class="list-btn blue" id="btn-export-plain" type="button" title="Export an unencrypted backup file">
           <i class="icon icon-copy"></i>
-          Export Backup (Plain)
+          Export Backup (JSON)
         </button>
         <div class="separator"></div>
         <button class="list-btn blue" id="btn-import" type="button" title="Import accounts from a backup file">
@@ -455,20 +463,18 @@
     <div class="sheet-content" id="duplicates-content"></div>
   </div>
 
-  <!-- DIALOG MODAL -->
-  <div id="dialog-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true">
-    <div class="modal-card">
-      <h3 id="dialog-title">Title</h3>
-      <div id="dialog-body"></div>
-      <div class="dialog-actions" id="dialog-actions"></div>
-    </div>
-  </div>
+  <!-- NATIVE DIALOG -->
+  <dialog id="app-dialog">
+    <h3 id="dialog-title">Title</h3>
+    <div id="dialog-body"></div>
+    <div class="dialog-actions" id="dialog-actions"></div>
+  </dialog>
 
   <!-- Toast -->
   <div id="toast" class="toast hidden" role="alert" aria-live="assertive"></div>
 
-  <script src="crypto.js"></script>
   <script src="jsQR.js"></script>
-  <script src="popup.js"></script>
+  <script src="js/crypto.js"></script>
+  <script src="js/popup.js"></script>
 </body>
 </html>
